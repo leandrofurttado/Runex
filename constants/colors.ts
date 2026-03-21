@@ -1,0 +1,15 @@
+export const Colors = {
+  background: '#0a0a0a',
+  surface: '#111111',
+  surfaceElevated: '#1a1a1a',
+  neonGreen: '#00ff88',
+  neonGreenDim: 'rgba(0,255,136,0.08)',
+  neonGreenBorder: 'rgba(0,255,136,0.2)',
+  neonYellow: '#ffaa00',
+  neonRed: '#ef4444',
+  text: '#ffffff',
+  textMuted: 'rgba(255,255,255,0.45)',
+  textDim: 'rgba(255,255,255,0.2)',
+  border: 'rgba(255,255,255,0.08)',
+  cardBg: 'rgba(17,17,17,0.95)',
+} as const;

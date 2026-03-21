@@ -45,8 +45,8 @@ export function useMultiplayer(
   const { user, profile } = useAuth();
   const channelRef = useRef<RealtimeChannel | null>(null);
   const playersRef = useRef<Map<string, OtherPlayer>>(new Map());
-  const broadcastIntervalRef = useRef<ReturnType<typeof setInterval>>();
-  const cleanupIntervalRef = useRef<ReturnType<typeof setInterval>>();
+  const broadcastIntervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+  const cleanupIntervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const onPlayersChangeRef = useRef<((players: OtherPlayer[]) => void) | null>(null);
   const userLocationRef = useRef<[number, number] | null>(null);
 

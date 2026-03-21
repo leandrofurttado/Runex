@@ -1,32 +1,32 @@
 {
   "expo": {
-    "name": "Run Quest",
-    "slug": "run-app",
+    "name": "Runex",
+    "slug": "runex",
     "version": "1.0.0",
     "orientation": "portrait",
-    "scheme": "run-app",
-    "userInterfaceStyle": "dark",
+    "scheme": "runex",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0a0a0a"
+      "backgroundColor": "#00E373"
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.runquest.app",
+      "bundleIdentifier": "com.runex.app",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Run Quest precisa da sua localização para rastrear suas corridas.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "Run Quest precisa da sua localização para rastrear suas corridas em segundo plano."
+        "NSLocationWhenInUseUsageDescription": "Runex precisa da sua localização para rastrear suas corridas.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Runex precisa da sua localização para rastrear suas corridas em segundo plano."
       }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#0a0a0a"
+        "backgroundColor": "#00E373"
       },
-      "package": "com.runquest.app",
+      "package": "com.runex.app",
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION"
@@ -42,7 +42,7 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Run Quest precisa da sua localização para rastrear suas corridas."
+          "locationAlwaysAndWhenInUsePermission": "Runex precisa da sua localização para rastrear suas corridas."
         }
       ],
       [

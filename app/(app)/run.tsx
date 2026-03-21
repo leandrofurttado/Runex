@@ -4,16 +4,18 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   Platform,
   Alert,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MapboxGL from '@rnmapbox/maps';
 import * as Location from 'expo-location';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useMultiplayer, type OtherPlayer } from '@/hooks/useMultiplayer';
-import { Colors } from '@/constants/colors';
+import { Palette } from '@/constants/colors';
+import { Fonts } from '@/constants/fonts';
 import {
   MAPBOX_STYLE_URL,
   MAPBOX_SUMMARY_STYLE_URL,
@@ -56,7 +58,13 @@ function smoothHeading(prev: number, next: number, alpha: number): number {
 
 export default function RunMapScreen() {
   const { profile } = useAuth();
+  const { colors, isDark } = useTheme();
+  const insets = useSafeAreaInsets();
   const cameraRef = useRef<MapboxGL.Camera>(null);
+
+  const topInset = Math.max(12, insets.top);
+  const bottomInset = Math.max(20, insets.bottom);
+  const horizontalInset = Math.max(12, insets.left, insets.right);
 
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [heading, setHeading] = useState(0);
@@ -319,7 +327,7 @@ export default function RunMapScreen() {
   }, []);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <MapboxGL.MapView
         style={styles.map}
         styleURL={isRouteSummaryView ? MAPBOX_SUMMARY_STYLE_URL : MAPBOX_STYLE_URL}
@@ -362,7 +370,7 @@ export default function RunMapScreen() {
             <MapboxGL.LineLayer
               id="route-trail-layer"
               style={{
-                lineColor: Colors.neonGreen,
+                lineColor: Palette.primary,
                 lineWidth: 6,
                 lineJoin: 'round',
                 lineCap: 'round',
@@ -381,7 +389,7 @@ export default function RunMapScreen() {
               visible
               pulsing={{
                 isEnabled: true,
-                color: Colors.neonGreen,
+                color: Palette.primary,
                 radius: 28,
               }}
               puckBearingEnabled
@@ -401,10 +409,10 @@ export default function RunMapScreen() {
               style={styles.playerMarker}
               onPress={() => setSelectedPlayer(player)}
             >
-              <View style={styles.playerMarkerRing}>
+              <View style={[styles.playerMarkerRing, { backgroundColor: colors.primaryDim, borderColor: colors.primary }]}>
                 <Text style={styles.playerEmoji}>🏃</Text>
               </View>
-              <Text style={styles.playerLabel} numberOfLines={1}>
+              <Text style={[styles.playerLabel, { color: colors.text }]} numberOfLines={1}>
                 {player.nickname}
               </Text>
             </TouchableOpacity>
@@ -412,30 +420,33 @@ export default function RunMapScreen() {
         ))}
       </MapboxGL.MapView>
 
-      <SafeAreaView style={styles.backArea} pointerEvents="box-none">
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-          <Text style={styles.backBtnText}>←</Text>
+      <View style={[styles.backArea, { paddingTop: topInset, paddingLeft: horizontalInset }]} pointerEvents="box-none">
+        <TouchableOpacity
+          style={[styles.backBtn, { backgroundColor: isDark ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.9)', borderColor: isDark ? 'rgba(255,255,255,0.35)' : colors.primaryBorder }]}
+          onPress={() => router.back()}
+        >
+          <Text style={[styles.backBtnText, { color: isDark ? '#fff' : colors.text }]}>←</Text>
         </TouchableOpacity>
-      </SafeAreaView>
+      </View>
 
-      <SafeAreaView style={styles.hudArea} pointerEvents="box-none">
-        <View style={styles.hudCard}>
-          <Text style={styles.hudNick}>{profile?.nickname ?? 'Corredor'}</Text>
-          <Text style={styles.hudSub}>
+      <View style={[styles.hudArea, { paddingTop: topInset, paddingRight: horizontalInset }]} pointerEvents="box-none">
+        <View style={[styles.hudCard, { backgroundColor: isDark ? 'rgba(0,0,0,0.55)' : colors.cardBg, borderColor: colors.primaryBorder }]}>
+          <Text style={[styles.hudNick, { color: colors.primary }]}>{profile?.nickname ?? 'Corredor'}</Text>
+          <Text style={[styles.hudSub, { color: colors.textMuted }]}>
             Nv.{profile?.level ?? 1} · {nearbyPlayers.length} por perto
           </Text>
         </View>
-      </SafeAreaView>
+      </View>
 
       {isRunning && (
-        <View style={styles.statsRow} pointerEvents="none">
-          <View style={styles.statPill}>
-            <Text style={styles.statLabel}>TEMPO</Text>
-            <Text style={styles.statValue}>{formatDuration(runSeconds)}</Text>
+        <View style={[styles.statsRow, { top: topInset + 56, left: horizontalInset, right: horizontalInset }]} pointerEvents="none">
+          <View style={[styles.statPill, { backgroundColor: isDark ? 'rgba(0,0,0,0.65)' : colors.cardBg, borderColor: colors.primaryBorder }]}>
+            <Text style={[styles.statLabel, { color: colors.textMuted }]}>TEMPO</Text>
+            <Text style={[styles.statValue, { color: colors.primary }]}>{formatDuration(runSeconds)}</Text>
           </View>
-          <View style={styles.statPill}>
-            <Text style={styles.statLabel}>DISTÂNCIA</Text>
-            <Text style={styles.statValue}>
+          <View style={[styles.statPill, { backgroundColor: isDark ? 'rgba(0,0,0,0.65)' : colors.cardBg, borderColor: colors.primaryBorder }]}>
+            <Text style={[styles.statLabel, { color: colors.textMuted }]}>DISTÂNCIA</Text>
+            <Text style={[styles.statValue, { color: colors.primary }]}>
               {runDistanceM < 1000
                 ? `${Math.round(runDistanceM)} m`
                 : `${(runDistanceM / 1000).toFixed(2)} km`}
@@ -445,8 +456,8 @@ export default function RunMapScreen() {
       )}
 
       {nearbyPlayers.length > 0 && !isRunning && (
-        <SafeAreaView style={styles.playerListArea} pointerEvents="box-none">
-          <View style={styles.playerList}>
+        <View style={[styles.playerListArea, { top: topInset + 56, right: horizontalInset }]} pointerEvents="box-none">
+          <View style={[styles.playerList, { backgroundColor: isDark ? 'rgba(0,0,0,0.55)' : colors.cardBg, borderColor: colors.border }]}>
             {nearbyPlayers.slice(0, 4).map((p) => (
               <TouchableOpacity
                 key={p.userId}
@@ -454,52 +465,56 @@ export default function RunMapScreen() {
                 onPress={() => setSelectedPlayer(p)}
               >
                 <Text style={styles.playerListEmoji}>🏃</Text>
-                <Text style={styles.playerListNick}>{p.nickname}</Text>
+                <Text style={[styles.playerListNick, { color: colors.primary }]}>{p.nickname}</Text>
               </TouchableOpacity>
             ))}
           </View>
-        </SafeAreaView>
+        </View>
       )}
 
-      <SafeAreaView style={styles.recenterArea} pointerEvents="box-none">
+      <View style={[styles.recenterArea, { paddingBottom: bottomInset + 110, paddingRight: horizontalInset }]} pointerEvents="box-none">
         <TouchableOpacity
-          style={styles.recenterBtn}
+          style={[styles.recenterBtn, { backgroundColor: isDark ? 'rgba(0,0,0,0.58)' : colors.cardBg, borderColor: isDark ? 'rgba(255,255,255,0.35)' : colors.primaryBorder }]}
           onPress={recenterOnMe}
           activeOpacity={0.85}
           accessibilityLabel="Centralizar no meu local"
         >
           <Text style={styles.recenterEmoji}>📍</Text>
         </TouchableOpacity>
-      </SafeAreaView>
+      </View>
 
-      <SafeAreaView style={styles.controlsArea} pointerEvents="box-none">
-        <View style={styles.controlsInner}>
+      <View style={[styles.controlsArea, { paddingBottom: bottomInset }]} pointerEvents="box-none">
+        <View style={[styles.controlsInner, { paddingHorizontal: horizontalInset + 8 }]}>
           {!isRunning ? (
-            <TouchableOpacity style={styles.btnStart} onPress={startRun} activeOpacity={0.9}>
-              <Text style={styles.btnStartIcon}>▶</Text>
-              <Text style={styles.btnStartText}>INICIAR CORRIDA</Text>
+            <TouchableOpacity
+              style={[styles.btnStart, { backgroundColor: colors.primary, borderColor: colors.primaryBorder, shadowColor: colors.primary }]}
+              onPress={startRun}
+              activeOpacity={0.9}
+            >
+              <Text style={[styles.btnStartIcon, { color: isDark ? '#fff' : '#000' }]}>▶</Text>
+              <Text style={[styles.btnStartText, { color: isDark ? '#fff' : '#000' }]}>INICIAR CORRIDA</Text>
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity style={styles.btnStop} onPress={stopRun} activeOpacity={0.9}>
+            <TouchableOpacity style={[styles.btnStop, { borderColor: colors.border }]} onPress={stopRun} activeOpacity={0.9}>
               <Text style={styles.btnStopIcon}>■</Text>
               <Text style={styles.btnStopText}>PARAR</Text>
             </TouchableOpacity>
           )}
         </View>
-      </SafeAreaView>
+      </View>
 
       {selectedPlayer && (
         <View style={styles.modalOverlay}>
-          <View style={styles.playerModal}>
-            <Text style={styles.playerModalTitle}>🏃 {selectedPlayer.nickname}</Text>
-            <View style={styles.playerModalRow}>
-              <Text style={styles.playerModalRowLabel}>Nível</Text>
-              <Text style={styles.playerModalRowValue}>Nv.{selectedPlayer.level}</Text>
+          <View style={[styles.playerModal, { backgroundColor: colors.surface, borderColor: colors.primaryBorder }]}>
+            <Text style={[styles.playerModalTitle, { color: colors.primary }]}>🏃 {selectedPlayer.nickname}</Text>
+            <View style={[styles.playerModalRow, { backgroundColor: colors.primaryDim }]}>
+              <Text style={[styles.playerModalRowLabel, { color: colors.textMuted }]}>Nível</Text>
+              <Text style={[styles.playerModalRowValue, { color: colors.primary }]}>Nv.{selectedPlayer.level}</Text>
             </View>
             {userLocation && (
-              <View style={styles.playerModalRow}>
-                <Text style={styles.playerModalRowLabel}>Distância</Text>
-                <Text style={styles.playerModalRowValue}>
+              <View style={[styles.playerModalRow, { backgroundColor: colors.primaryDim }]}>
+                <Text style={[styles.playerModalRowLabel, { color: colors.textMuted }]}>Distância</Text>
+                <Text style={[styles.playerModalRowValue, { color: colors.primary }]}>
                   {(() => {
                     const d = haversineM(userLocation, [selectedPlayer.lng, selectedPlayer.lat]);
                     return d < 1000 ? `${Math.round(d)} m` : `${(d / 1000).toFixed(1)} km`;
@@ -508,10 +523,10 @@ export default function RunMapScreen() {
               </View>
             )}
             <TouchableOpacity
-              style={styles.playerModalClose}
+              style={[styles.playerModalClose, { backgroundColor: colors.primaryDim, borderColor: colors.border }]}
               onPress={() => setSelectedPlayer(null)}
             >
-              <Text style={styles.playerModalCloseText}>Fechar</Text>
+              <Text style={[styles.playerModalCloseText, { color: colors.text }]}>Fechar</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -546,8 +561,7 @@ const styles = StyleSheet.create({
     pointerEvents: 'box-none',
   },
   backBtn: {
-    margin: 14,
-    marginTop: Platform.OS === 'ios' ? 6 : 14,
+    margin: 10,
     width: 48,
     height: 48,
     borderRadius: 24,
@@ -563,9 +577,8 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   backBtnText: {
-    color: '#fff',
     fontSize: 22,
-    fontWeight: 'bold',
+    fontFamily: Fonts.bold,
   },
   hudArea: {
     position: 'absolute',
@@ -574,8 +587,7 @@ const styles = StyleSheet.create({
     pointerEvents: 'none',
   },
   hudCard: {
-    margin: 14,
-    marginTop: Platform.OS === 'ios' ? 6 : 14,
+    margin: 10,
     backgroundColor: 'rgba(0,0,0,0.55)',
     borderWidth: 2,
     borderColor: 'rgba(255,220,100,0.45)',
@@ -590,24 +602,19 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   hudNick: {
-    color: '#ffeb3b',
-    fontWeight: '800',
     fontSize: 14,
+    fontFamily: Fonts.bold,
     textShadowColor: 'rgba(0,0,0,0.8)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
   },
   hudSub: {
-    color: 'rgba(255,255,255,0.85)',
     fontSize: 11,
     marginTop: 2,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
   },
   statsRow: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 88 : 78,
-    left: 16,
-    right: 16,
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 12,
@@ -623,21 +630,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statLabel: {
-    color: 'rgba(255,255,255,0.7)',
     fontSize: 9,
-    fontWeight: '800',
     letterSpacing: 1.2,
+    fontFamily: Fonts.bold,
   },
   statValue: {
-    color: '#00ffaa',
     fontSize: 20,
-    fontWeight: '800',
     marginTop: 2,
+    fontFamily: Fonts.bold,
   },
   playerListArea: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 100 : 88,
-    right: 10,
     pointerEvents: 'box-none',
   },
   playerList: {
@@ -659,9 +662,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   playerListNick: {
-    color: '#ffeb3b',
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     flex: 1,
   },
   recenterArea: {
@@ -669,8 +671,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     right: 0,
     pointerEvents: 'box-none',
-    paddingBottom: Platform.OS === 'ios' ? 118 : 102,
-    paddingRight: 14,
   },
   recenterBtn: {
     width: 48,
@@ -698,12 +698,10 @@ const styles = StyleSheet.create({
     pointerEvents: 'box-none',
   },
   controlsInner: {
-    paddingHorizontal: 20,
-    paddingBottom: Platform.OS === 'ios' ? 28 : 20,
-    paddingTop: 12,
+    paddingBottom: 24,
+    paddingTop: 16,
   },
   btnStart: {
-    backgroundColor: '#00c853',
     borderRadius: 20,
     paddingVertical: 18,
     flexDirection: 'row',
@@ -711,23 +709,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 12,
     borderWidth: 3,
-    borderColor: 'rgba(255,255,255,0.5)',
-    shadowColor: '#00ff88',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.5,
     shadowRadius: 12,
     elevation: 12,
   },
   btnStartIcon: {
-    color: '#fff',
     fontSize: 22,
-    fontWeight: '900',
+    fontFamily: Fonts.bold,
   },
   btnStartText: {
-    color: '#fff',
     fontSize: 17,
-    fontWeight: '900',
     letterSpacing: 1,
+    fontFamily: Fonts.bold,
   },
   btnStop: {
     backgroundColor: '#d32f2f',
@@ -748,13 +742,13 @@ const styles = StyleSheet.create({
   btnStopIcon: {
     color: '#fff',
     fontSize: 18,
-    fontWeight: '900',
+    fontFamily: Fonts.bold,
   },
   btnStopText: {
     color: '#fff',
     fontSize: 17,
-    fontWeight: '900',
     letterSpacing: 2,
+    fontFamily: Fonts.bold,
   },
   playerMarker: {
     alignItems: 'center',
@@ -763,9 +757,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(255,235,59,0.95)',
     borderWidth: 3,
-    borderColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -779,9 +771,8 @@ const styles = StyleSheet.create({
   },
   playerLabel: {
     marginTop: 2,
-    color: '#fff',
     fontSize: 10,
-    fontWeight: '800',
+    fontFamily: Fonts.bold,
     textShadowColor: '#000',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
@@ -806,10 +797,9 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,235,59,0.5)',
   },
   playerModalTitle: {
-    color: '#ffeb3b',
     fontSize: 18,
-    fontWeight: '800',
     marginBottom: 16,
+    fontFamily: Fonts.bold,
   },
   playerModalRow: {
     flexDirection: 'row',
@@ -821,13 +811,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   playerModalRowLabel: {
-    color: 'rgba(255,255,255,0.6)',
     fontSize: 13,
+    fontFamily: Fonts.regular,
   },
   playerModalRowValue: {
-    color: '#00ffaa',
-    fontWeight: '800',
     fontSize: 14,
+    fontFamily: Fonts.bold,
   },
   playerModalClose: {
     marginTop: 8,
@@ -839,8 +828,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.2)',
   },
   playerModalCloseText: {
-    color: '#fff',
-    fontWeight: '700',
     fontSize: 14,
+    fontFamily: Fonts.bold,
   },
 });

@@ -26,8 +26,8 @@
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
-        <data android:scheme="run-app"/>
-        <data android:scheme="exp+run-app"/>
+        <data android:scheme="runex"/>
+        <data android:scheme="exp+runex"/>
       </intent-filter>
     </activity>
   </application>

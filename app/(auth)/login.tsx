@@ -11,10 +11,14 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
-import { Colors } from '@/constants/colors';
+import { useTheme } from '@/contexts/ThemeContext';
+import { Fonts } from '@/constants/fonts';
 
 export default function LoginScreen() {
+  const { colors, isDark, toggleDark } = useTheme();
+  const insets = useSafeAreaInsets();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -47,33 +51,45 @@ export default function LoginScreen() {
     }
   };
 
+  const horizontalPad = Math.max(24, insets.left, insets.right);
+  const topPad = Math.max(24, insets.top);
+  const bottomPad = Math.max(40, insets.bottom) + 24;
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background }]}
     >
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[styles.scroll, { paddingHorizontal: horizontalPad, paddingTop: topPad, paddingBottom: bottomPad }]}
         keyboardShouldPersistTaps="handled"
       >
         {/* Logo */}
         <View style={styles.logoArea}>
           <Text style={styles.logoEmoji}>🏃</Text>
-          <Text style={styles.logoTitle}>RUN QUEST</Text>
-          <Text style={styles.logoSub}>Corra. Explore. Evolua.</Text>
+          <Text style={[styles.logoTitle, { color: colors.primary, textShadowColor: colors.primary }]}>
+            RUNEX
+          </Text>
+          <Text style={[styles.logoSub, { color: colors.textMuted }]}>Corra. Explore. Evolua.</Text>
+          <TouchableOpacity
+            onPress={toggleDark}
+            style={[styles.themeToggle, { borderColor: colors.border }]}
+          >
+            <Text style={styles.themeToggleText}>{isDark ? '☀️ Claro' : '🌙 Escuro'}</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Card */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>{isLogin ? 'Entrar' : 'Criar Conta'}</Text>
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.primaryBorder }]}>
+          <Text style={[styles.cardTitle, { color: colors.text }]}>{isLogin ? 'Entrar' : 'Criar Conta'}</Text>
 
           {!isLogin && (
             <View style={styles.field}>
-              <Text style={styles.label}>NICKNAME</Text>
+              <Text style={[styles.label, { color: colors.primary }]}>NICKNAME</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, color: colors.text }]}
                 placeholder="Seu apelido de corredor"
-                placeholderTextColor={Colors.textDim}
+                placeholderTextColor={colors.textDim}
                 value={nickname}
                 onChangeText={setNickname}
                 autoCapitalize="none"
@@ -83,11 +99,11 @@ export default function LoginScreen() {
           )}
 
           <View style={styles.field}>
-            <Text style={styles.label}>EMAIL</Text>
+            <Text style={[styles.label, { color: colors.primary }]}>EMAIL</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, color: colors.text }]}
               placeholder="seu@email.com"
-              placeholderTextColor={Colors.textDim}
+              placeholderTextColor={colors.textDim}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -97,11 +113,11 @@ export default function LoginScreen() {
           </View>
 
           <View style={styles.field}>
-            <Text style={styles.label}>SENHA</Text>
+            <Text style={[styles.label, { color: colors.primary }]}>SENHA</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, color: colors.text }]}
               placeholder="Sua senha"
-              placeholderTextColor={Colors.textDim}
+              placeholderTextColor={colors.textDim}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
@@ -109,7 +125,7 @@ export default function LoginScreen() {
           </View>
 
           <TouchableOpacity
-            style={[styles.btn, loading && styles.btnDisabled]}
+            style={[styles.btn, { backgroundColor: colors.primary, shadowColor: colors.primary }, loading && styles.btnDisabled]}
             onPress={handleSubmit}
             disabled={loading}
           >
@@ -121,7 +137,7 @@ export default function LoginScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.switchBtn} onPress={() => setIsLogin(!isLogin)}>
-            <Text style={styles.switchText}>
+            <Text style={[styles.switchText, { color: colors.textMuted }]}>
               {isLogin ? 'Não tem conta? Cadastre-se' : 'Já tem conta? Entrar'}
             </Text>
           </TouchableOpacity>
@@ -134,7 +150,6 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   scroll: {
     flexGrow: 1,
@@ -151,61 +166,62 @@ const styles = StyleSheet.create({
   },
   logoTitle: {
     fontSize: 36,
-    fontWeight: 'bold',
-    color: Colors.neonGreen,
     letterSpacing: 5,
-    textShadowColor: Colors.neonGreen,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 18,
+    fontFamily: Fonts.bold,
   },
   logoSub: {
-    color: Colors.textMuted,
     fontSize: 12,
     letterSpacing: 2,
     marginTop: 6,
     textTransform: 'uppercase',
+    fontFamily: Fonts.medium,
+  },
+  themeToggle: {
+    marginTop: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  themeToggleText: {
+    fontSize: 14,
+    fontFamily: Fonts.medium,
   },
   card: {
-    backgroundColor: Colors.surface,
     borderRadius: 20,
     padding: 24,
     borderWidth: 1,
-    borderColor: Colors.neonGreenBorder,
   },
   cardTitle: {
-    color: Colors.text,
     fontSize: 20,
-    fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 22,
+    fontFamily: Fonts.bold,
   },
   field: {
     marginBottom: 16,
   },
   label: {
-    color: Colors.neonGreen,
     fontSize: 11,
-    fontWeight: '700',
     letterSpacing: 2,
     marginBottom: 7,
+    fontFamily: Fonts.bold,
   },
   input: {
-    backgroundColor: Colors.surfaceElevated,
     borderWidth: 1,
-    borderColor: Colors.border,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    color: Colors.text,
     fontSize: 15,
+    fontFamily: Fonts.regular,
   },
   btn: {
-    backgroundColor: Colors.neonGreen,
     borderRadius: 12,
     paddingVertical: 15,
     alignItems: 'center',
     marginTop: 6,
-    shadowColor: Colors.neonGreen,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.35,
     shadowRadius: 14,
@@ -216,16 +232,16 @@ const styles = StyleSheet.create({
   },
   btnText: {
     color: '#000000',
-    fontWeight: 'bold',
     fontSize: 15,
     letterSpacing: 2,
+    fontFamily: Fonts.bold,
   },
   switchBtn: {
     marginTop: 18,
     alignItems: 'center',
   },
   switchText: {
-    color: Colors.textMuted,
     fontSize: 13,
+    fontFamily: Fonts.medium,
   },
 });

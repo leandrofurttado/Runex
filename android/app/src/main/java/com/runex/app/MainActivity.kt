@@ -1,4 +1,4 @@
-package com.runquest.app
+package com.runex.app
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

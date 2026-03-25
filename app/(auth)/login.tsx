@@ -12,9 +12,11 @@ import {
   Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Fonts } from '@/constants/fonts';
+import { AnimatedRunexLogo } from '@/components/brand/AnimatedRunexLogo';
 
 export default function LoginScreen() {
   const { colors, isDark, toggleDark } = useTheme();
@@ -60,23 +62,33 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={[styles.container, { backgroundColor: colors.background }]}
     >
+      <TouchableOpacity
+        onPress={toggleDark}
+        style={[
+          styles.themeCornerBtn,
+          {
+            top: insets.top + 8,
+            right: Math.max(16, insets.right + 8),
+            borderColor: colors.border,
+            backgroundColor: colors.surface,
+          },
+        ]}
+        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        accessibilityRole="button"
+        accessibilityLabel={isDark ? 'Ativar tema claro' : 'Ativar tema escuro'}
+      >
+        <Ionicons name={isDark ? 'sunny' : 'moon'} size={24} color={colors.primary} />
+      </TouchableOpacity>
       <ScrollView
         contentContainerStyle={[styles.scroll, { paddingHorizontal: horizontalPad, paddingTop: topPad, paddingBottom: bottomPad }]}
         keyboardShouldPersistTaps="handled"
       >
         {/* Logo */}
         <View style={styles.logoArea}>
-          <Text style={styles.logoEmoji}>🏃</Text>
-          <Text style={[styles.logoTitle, { color: colors.primary, textShadowColor: colors.primary }]}>
-            RUNEX
+          <AnimatedRunexLogo size={180} containerStyle={styles.logoMark} />
+          <Text style={[styles.logoSub, { color: colors.textMuted }]}>
+            CORRA. EVOLUA. TENHA SAÚDE COM DIVERSÃO E COMPETITIVIDADE...
           </Text>
-          <Text style={[styles.logoSub, { color: colors.textMuted }]}>Corra. Explore. Evolua.</Text>
-          <TouchableOpacity
-            onPress={toggleDark}
-            style={[styles.themeToggle, { borderColor: colors.border }]}
-          >
-            <Text style={styles.themeToggleText}>{isDark ? '☀️ Claro' : '🌙 Escuro'}</Text>
-          </TouchableOpacity>
         </View>
 
         {/* Card */}
@@ -151,6 +163,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  themeCornerBtn: {
+    position: 'absolute',
+    zIndex: 10,
+    padding: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
   scroll: {
     flexGrow: 1,
     justifyContent: 'center',
@@ -160,34 +179,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 40,
   },
-  logoEmoji: {
-    fontSize: 64,
-    marginBottom: 10,
-  },
-  logoTitle: {
-    fontSize: 36,
-    letterSpacing: 5,
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 18,
-    fontFamily: Fonts.bold,
+  logoMark: {
+    marginBottom: 4,
   },
   logoSub: {
-    fontSize: 12,
-    letterSpacing: 2,
-    marginTop: 6,
+    fontSize: 15,
+    letterSpacing: 1,
+    marginTop: 2,
     textTransform: 'uppercase',
     fontFamily: Fonts.medium,
-  },
-  themeToggle: {
-    marginTop: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  themeToggleText: {
-    fontSize: 14,
-    fontFamily: Fonts.medium,
+    textAlign: 'center',
+    lineHeight: 22,
+    paddingHorizontal: 4,
+    maxWidth: 360,
   },
   card: {
     borderRadius: 20,

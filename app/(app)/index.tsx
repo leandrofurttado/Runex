@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  useWindowDimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -12,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Fonts } from '@/constants/fonts';
+import { RunexLogo } from '@/components/brand/RunexLogo';
 
 function StatCard({
   icon,
@@ -37,6 +39,13 @@ export default function DashboardScreen() {
   const { profile, signOut } = useAuth();
   const { colors, isDark, toggleDark } = useTheme();
   const insets = useSafeAreaInsets();
+  const { width: windowWidth } = useWindowDimensions();
+
+  /** Ícone da app: escala com a largura do ecrã, limitado para telemóveis pequenos e grandes. */
+  const headerIconSize = useMemo(
+    () => Math.min(72, Math.max(46, Math.round(windowWidth * 0.125))),
+    [windowWidth]
+  );
 
   const level = profile?.level ?? 1;
   const xp = profile?.xp ?? 0;
@@ -62,18 +71,22 @@ export default function DashboardScreen() {
       >
         {/* Top bar */}
         <View style={styles.topBar}>
-          <View>
-            <Text style={[styles.appTitle, { color: colors.primary, textShadowColor: colors.primary }]}>
-              RUNEX
-            </Text>
-            <Text style={[styles.appSubtitle, { color: colors.textMuted }]}>DASHBOARD</Text>
+          <View style={styles.topBarBrand}>
+            <RunexLogo size={headerIconSize} style={styles.topBarLogo} />
+            <View>
+              <Text style={[styles.appTitle, { color: colors.primary, textShadowColor: colors.primary }]}>
+                RUNEX
+              </Text>
+              <Text style={[styles.appSubtitle, { color: colors.textMuted }]}>DASHBOARD</Text>
+            </View>
           </View>
           <View style={styles.topBarActions}>
             <TouchableOpacity
               onPress={toggleDark}
               style={[styles.themeBtn, { borderColor: colors.border }]}
+              accessibilityLabel={isDark ? 'Ativar tema claro' : 'Ativar tema escuro'}
             >
-              <Text style={styles.themeBtnText}>{isDark ? '☀️' : '🌙'}</Text>
+              <Ionicons name={isDark ? 'sunny' : 'moon'} size={22} color={colors.primary} />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={signOut}
@@ -144,6 +157,15 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 20,
   },
+  topBarBrand: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 8,
+  },
+  topBarLogo: {
+    marginRight: 12,
+  },
   topBarActions: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -167,9 +189,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 10,
     borderWidth: 1,
-  },
-  themeBtnText: {
-    fontSize: 18,
   },
   logoutBtn: {
     paddingHorizontal: 12,

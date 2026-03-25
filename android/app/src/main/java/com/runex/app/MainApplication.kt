@@ -1,4 +1,4 @@
-package com.runquest.app
+package com.runex.app
 
 import android.app.Application
 import android.content.res.Configuration

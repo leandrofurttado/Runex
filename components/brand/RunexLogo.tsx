@@ -2,7 +2,7 @@ import React from 'react';
 import { Image, type ImageProps } from 'expo-image';
 import type { ImageStyle, StyleProp } from 'react-native';
 
-const LOGO_SOURCE = require('@/assets/images_svg/icon.svg');
+const LOGO_SOURCE = require('@/assets/icon-marker.png');
 
 type Props = {
   size?: number;
@@ -10,7 +10,7 @@ type Props = {
 } & Omit<ImageProps, 'source' | 'style'>;
 
 /**
- * Logótipo vetorial (`assets/images_svg/icon.svg`).
+ * Logótipo do app (`assets/icon-marker.png`) — fundo transparente.
  */
 export function RunexLogo({ size = 88, style, ...rest }: Props) {
   return (

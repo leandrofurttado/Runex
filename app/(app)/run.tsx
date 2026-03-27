@@ -7,6 +7,7 @@ import {
   Platform,
   Alert,
 } from 'react-native';
+import { PingMarker } from '@/components/map/PingMarker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MapboxGL from '@rnmapbox/maps';
 import * as Location from 'expo-location';
@@ -405,17 +406,12 @@ export default function RunMapScreen() {
             coordinate={[player.lng, player.lat]}
             id={`player-${player.userId}`}
           >
-            <TouchableOpacity
-              style={styles.playerMarker}
+            <PingMarker
+              size={52}
+              pingColor={colors.primary}
+              label={player.nickname}
               onPress={() => setSelectedPlayer(player)}
-            >
-              <View style={[styles.playerMarkerRing, { backgroundColor: colors.primaryDim, borderColor: colors.primary }]}>
-                <Text style={styles.playerEmoji}>🏃</Text>
-              </View>
-              <Text style={[styles.playerLabel, { color: colors.text }]} numberOfLines={1}>
-                {player.nickname}
-              </Text>
-            </TouchableOpacity>
+            />
           </MapboxGL.MarkerView>
         ))}
       </MapboxGL.MapView>
@@ -749,35 +745,6 @@ const styles = StyleSheet.create({
     fontSize: 17,
     letterSpacing: 2,
     fontFamily: Fonts.bold,
-  },
-  playerMarker: {
-    alignItems: 'center',
-  },
-  playerMarkerRing: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 3,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 4,
-    elevation: 6,
-  },
-  playerEmoji: {
-    fontSize: 22,
-  },
-  playerLabel: {
-    marginTop: 2,
-    fontSize: 10,
-    fontFamily: Fonts.bold,
-    textShadowColor: '#000',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
-    maxWidth: 72,
-    textAlign: 'center',
   },
   modalOverlay: {
     position: 'absolute',

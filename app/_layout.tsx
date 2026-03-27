@@ -1,7 +1,9 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { AppSplash } from '@/components/splash/AppSplash';
+import { LoadingGif } from '@/components/ui/LoadingGif';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -15,7 +17,6 @@ import {
 import * as SplashScreen from 'expo-splash-screen';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
-import { Palette } from '@/constants/colors';
 import 'react-native-url-polyfill/auto';
 
 SplashScreen.preventAutoHideAsync();
@@ -24,7 +25,6 @@ const queryClient = new QueryClient();
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();
-  const { colors } = useTheme();
   const segments = useSegments();
   const router = useRouter();
 
@@ -39,11 +39,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   }, [session, loading, segments]);
 
   if (loading) {
-    return (
-      <View style={[styles.loading, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={Palette.primary} />
-      </View>
-    );
+    return <LoadingGif size={150} fullScreen backgroundColor="transparent" />;
   }
 
   return <>{children}</>;
@@ -63,6 +59,8 @@ export default function RootLayout() {
     Fredoka_600SemiBold,
     Fredoka_700Bold,
   });
+
+  const [splashDone, setSplashDone] = useState(false);
 
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
@@ -91,6 +89,9 @@ export default function RootLayout() {
             </AuthProvider>
           </ThemeProvider>
         </QueryClientProvider>
+
+        {/* Splash customizada — sempre visível por pelo menos 2 s */}
+        {!splashDone && <AppSplash onDone={() => setSplashDone(true)} />}
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );

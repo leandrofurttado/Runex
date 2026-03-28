@@ -17,6 +17,7 @@ import { supabase } from '@/lib/supabase';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Fonts } from '@/constants/fonts';
 import { AnimatedRunexLogo } from '@/components/brand/AnimatedRunexLogo';
+import { RunexWordmark } from '@/components/brand/RunexWordmark';
 
 export default function LoginScreen() {
   const { colors, isDark, toggleDark } = useTheme();
@@ -86,6 +87,9 @@ export default function LoginScreen() {
         {/* Logo */}
         <View style={styles.logoArea}>
           <AnimatedRunexLogo size={180} containerStyle={styles.logoMark} />
+          <View style={styles.logoWordmark}>
+            <RunexWordmark align="center" />
+          </View>
           <Text style={[styles.logoSub, { color: colors.textMuted }]}>
             CORRA. EVOLUA. TENHA SAÚDE COM DIVERSÃO E COMPETITIVIDADE...
           </Text>
@@ -182,10 +186,15 @@ const styles = StyleSheet.create({
   logoMark: {
     marginBottom: 4,
   },
+  logoWordmark: {
+    marginTop: 4,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
   logoSub: {
     fontSize: 15,
     letterSpacing: 1,
-    marginTop: 2,
+    marginTop: 0,
     textTransform: 'uppercase',
     fontFamily: Fonts.medium,
     textAlign: 'center',
@@ -196,7 +205,7 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 20,
     padding: 24,
-    borderWidth: 1,
+    borderWidth: 2,
   },
   cardTitle: {
     fontSize: 20,

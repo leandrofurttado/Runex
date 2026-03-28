@@ -14,6 +14,10 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Fonts } from '@/constants/fonts';
 import { RunexLogo } from '@/components/brand/RunexLogo';
+import { RunexWordmark } from '@/components/brand/RunexWordmark';
+import { useUserRuns } from '@/hooks/useUserRuns';
+import { aggregateRuns, formatDistanceKm, formatDurationHuman } from '@/lib/runs';
+import { TAB_BAR_SCROLL_BOTTOM_PADDING } from '@/constants/tabBar';
 
 function StatCard({
   icon,
@@ -36,14 +40,16 @@ function StatCard({
 }
 
 export default function DashboardScreen() {
-  const { profile, signOut } = useAuth();
+  const { profile } = useAuth();
   const { colors, isDark, toggleDark } = useTheme();
   const insets = useSafeAreaInsets();
   const { width: windowWidth } = useWindowDimensions();
+  const { data: runs = [] } = useUserRuns('all');
 
-  /** Ícone da app: escala com a largura do ecrã, limitado para telemóveis pequenos e grandes. */
+  const stats = useMemo(() => aggregateRuns(runs), [runs]);
+
   const headerIconSize = useMemo(
-    () => Math.min(72, Math.max(46, Math.round(windowWidth * 0.125))),
+    () => Math.min(104, Math.max(68, Math.round(windowWidth * 0.17))),
     [windowWidth]
   );
 
@@ -53,8 +59,8 @@ export default function DashboardScreen() {
   const xpPercent = Math.min((xp / xpForNext) * 100, 100);
 
   const horizontalPadding = Math.max(20, insets.left, insets.right);
-  const bottomPadding = Math.max(40, insets.bottom + 24);
-  const topPadding = Math.max(16, insets.top);
+  const bottomPadding = Math.max(40, insets.bottom + 24) + TAB_BAR_SCROLL_BOTTOM_PADDING;
+  const topPadding = Math.max(20, insets.top + 20);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -69,14 +75,11 @@ export default function DashboardScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Top bar */}
         <View style={styles.topBar}>
           <View style={styles.topBarBrand}>
             <RunexLogo size={headerIconSize} style={styles.topBarLogo} />
             <View>
-              <Text style={[styles.appTitle, { color: colors.primary, textShadowColor: colors.primary }]}>
-                RUNEX
-              </Text>
+              <RunexWordmark />
               <Text style={[styles.appSubtitle, { color: colors.textMuted }]}>DASHBOARD</Text>
             </View>
           </View>
@@ -88,16 +91,9 @@ export default function DashboardScreen() {
             >
               <Ionicons name={isDark ? 'sunny' : 'moon'} size={22} color={colors.primary} />
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={signOut}
-              style={[styles.logoutBtn, { borderColor: colors.border }]}
-            >
-              <Text style={[styles.logoutText, { color: colors.textMuted }]}>↪ Sair</Text>
-            </TouchableOpacity>
           </View>
         </View>
 
-        {/* Player card */}
         <View style={[styles.playerCard, { backgroundColor: colors.surface, borderColor: colors.primaryBorder }]}>
           <View style={[styles.avatarPlaceholder, { backgroundColor: colors.primaryDim, borderColor: colors.primaryBorder }]}>
             <Ionicons name="person" size={48} color={colors.primary} />
@@ -110,7 +106,6 @@ export default function DashboardScreen() {
           </View>
         </View>
 
-        {/* XP bar */}
         <View style={[styles.xpCard, { backgroundColor: colors.surface, borderColor: colors.primaryBorder }]}>
           <View style={styles.xpHeader}>
             <Text style={[styles.xpTitle, { color: colors.textMuted }]}>⚡ Experiência</Text>
@@ -123,14 +118,13 @@ export default function DashboardScreen() {
           </View>
         </View>
 
-        {/* Stats grid */}
+        <Text style={[styles.sectionHint, { color: colors.textMuted }]}>Totais (todas as corridas)</Text>
         <View style={styles.statsRow}>
-          <StatCard icon="🗺️" value={0} label="Corridas" colors={colors} />
-          <StatCard icon="📍" value="0 km" label="Distância" colors={colors} />
-          <StatCard icon="⏱️" value="0h" label="Tempo" colors={colors} />
+          <StatCard icon="🗺️" value={stats.runCount} label="Corridas" colors={colors} />
+          <StatCard icon="📍" value={formatDistanceKm(stats.totalDistanceM)} label="Distância" colors={colors} />
+          <StatCard icon="⏱️" value={formatDurationHuman(stats.totalDurationSec)} label="Tempo" colors={colors} />
         </View>
 
-        {/* Start button */}
         <TouchableOpacity
           style={[styles.startBtn, { backgroundColor: colors.primary, shadowColor: colors.primary }]}
           onPress={() => router.push('/(app)/run')}
@@ -171,13 +165,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  appTitle: {
-    fontSize: 24,
-    letterSpacing: 3,
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 12,
-    fontFamily: Fonts.bold,
-  },
   appSubtitle: {
     fontSize: 10,
     letterSpacing: 3,
@@ -190,14 +177,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
   },
-  logoutBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 10,
-    borderWidth: 1,
-  },
-  logoutText: {
-    fontSize: 13,
+  sectionHint: {
+    fontSize: 11,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    marginBottom: 8,
     fontFamily: Fonts.medium,
   },
   playerCard: {
@@ -283,8 +267,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   statValue: {
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: Fonts.bold,
+    textAlign: 'center',
   },
   statLabel: {
     fontSize: 10,

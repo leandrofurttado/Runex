@@ -1,7 +1,7 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native'; // StyleSheet mantido para compatibilidade futura
 import { AppSplash } from '@/components/splash/AppSplash';
 import { LoadingGif } from '@/components/ui/LoadingGif';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';

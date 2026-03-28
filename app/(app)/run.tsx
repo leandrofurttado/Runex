@@ -12,7 +12,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MapboxGL from '@rnmapbox/maps';
 import * as Location from 'expo-location';
 import { router } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
+import { saveRun } from '@/lib/runs';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useMultiplayer, type OtherPlayer } from '@/hooks/useMultiplayer';
 import { Palette } from '@/constants/colors';
@@ -58,7 +60,8 @@ function smoothHeading(prev: number, next: number, alpha: number): number {
 }
 
 export default function RunMapScreen() {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
+  const queryClient = useQueryClient();
   const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const cameraRef = useRef<MapboxGL.Camera>(null);
@@ -85,6 +88,7 @@ export default function RunMapScreen() {
   const distanceAccRef = useRef(0);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const runSecondsRef = useRef(0);
+  const runStartedAtRef = useRef<Date | null>(null);
 
   const { subscribe } = useMultiplayer(userLocation, heading);
 
@@ -117,6 +121,7 @@ export default function RunMapScreen() {
     setIsRouteSummaryView(false);
     setIsRunning(true);
     isRunningRef.current = true;
+    runStartedAtRef.current = new Date();
 
     tickRef.current = setInterval(() => {
       runSecondsRef.current += 1;
@@ -134,10 +139,36 @@ export default function RunMapScreen() {
   }, [userLocation]);
 
   const stopRun = useCallback(() => {
-    const route = routeCoordsRef.current;
-    stopRunInternal();
+    const endedAt = new Date();
+    const routeSnapshot = [...routeCoordsRef.current];
     const dist = distanceAccRef.current;
     const secs = runSecondsRef.current;
+    const startedAtSnapshot = runStartedAtRef.current;
+    const route = routeCoordsRef.current;
+    const userId = user?.id;
+
+    stopRunInternal();
+    runStartedAtRef.current = null;
+
+    const shouldPersist = userId && (secs >= 5 || dist > 10);
+    if (shouldPersist) {
+      const startedAt =
+        startedAtSnapshot ?? new Date(endedAt.getTime() - Math.max(0, secs) * 1000);
+      void saveRun({
+        userId,
+        distanceMeters: dist,
+        durationSeconds: secs,
+        startedAt,
+        endedAt,
+        routeCoordinates: routeSnapshot,
+      })
+        .then(() => {
+          queryClient.invalidateQueries({ queryKey: ['runs'] });
+        })
+        .catch((err: unknown) => {
+          console.warn('[runs] Falha ao salvar corrida', err);
+        });
+    }
     if (dist > 10 || secs > 5) {
       Alert.alert(
         'Corrida pausada',
@@ -184,7 +215,7 @@ export default function RunMapScreen() {
         animationDuration: 700,
       });
     }
-  }, [stopRunInternal, userLocation]);
+  }, [stopRunInternal, userLocation, user?.id, queryClient]);
 
   const recenterOnMe = useCallback(() => {
     if (!userLocation) {
